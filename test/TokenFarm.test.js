@@ -62,7 +62,37 @@ contract('TokenFarm', accounts => {
     })
     
 
+    describe('Farming tokens', async ()=>{
+        it('Rewards investors from staking', async () =>{
+            let result 
 
+            //check the balance before staking
+            result = await daiToken.balanceOf(accounts[1])
+            assert.equal(result.toString(),token('100'),'investor Mock Dai wallet correct before staking')
+
+
+            //We need to aprovedd first because we're using transferFrom
+            await daiToken.approve(tokenFarm.address, token('100'), { from: accounts[1]} )
+            //stake mDai tokens
+            await tokenFarm.stakeTokens(token('100'),{ from:accounts[1]} )
+            
+
+            //Check staking result
+            result = await daiToken.balanceOf(accounts[1])
+            assert.equal(result.toString(), token('0'),'investor mDai wallet empty after staking')
+
+            result = await daiToken.balanceOf(tokenFarm.address)
+            assert.equal(result.toString(), token('100'),'Correct transfer into token Farm')
+            
+            result = await tokenFarm.stakingBalance(accounts[1])
+            assert.equal(result.toString(), token('100'),'investor has his token farms after staking')
+           
+            result = await tokenFarm.isStaking(accounts[1])
+            assert.equal(result.toString(),'true','Investor is currently staking their mDai')
+
+
+        })
+    })
 
 
 
