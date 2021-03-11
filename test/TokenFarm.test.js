@@ -5,6 +5,10 @@ const DappToken = artifacts.require('DappToken');
 const DaiToken = artifacts.require('DaiToken');
 const TokenFarm = artifacts.require('TokenFarm');
 
+// accounts 
+// 0 --> Deployer
+// 1 --> Investor
+
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -12,7 +16,7 @@ require('chai')
 
 // function for convert ETH ====> Wei
 function token(n){
-    return Web3.utils.toWei(n,'ether')
+    return web3.utils.toWei(n,'ether')
 }
 
 contract('TokenFarm', accounts => {
@@ -26,13 +30,41 @@ contract('TokenFarm', accounts => {
 
         // Transfer tokens into farm
         await dappToken.transfer(tokenFarm.address,token('1000000'))
+
+        //Return tokens to investor, from account of deployer
+        await daiToken.transfer(accounts[1],token('100'),{from:accounts[0]})
     })
 
     describe('Mock Dai deployment', async () =>{
         it('has a name', async () => {
-            let daiToken = await DaiToken.new()
-            let name = await daiToken.name()
+            const name = await daiToken.name()
             assert.equal(name,'Mock DAI Token')
         })
     })
+
+    describe('Dapp Token deployment', async () =>{
+        it('has a name', async () => {
+            const name = await dappToken.name()
+            assert.equal(name,'DApp Token')
+        })
+    })
+
+    describe('Token Farm deployment', async () =>{
+        it('has a name', async () => {
+            const name = await tokenFarm.name()
+            assert.equal(name,'Dapp Token Farm')
+        })
+
+        it('contract has tokens',async () => {
+            let balance = await dappToken.balanceOf(tokenFarm.address)
+            assert.equal(balance.toString(),token('1000000'))
+        })
+    })
+    
+
+
+
+
+
+
 }) 
